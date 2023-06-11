@@ -1,5 +1,4 @@
-package controler;
-import repository.Repository;
+package controller;
 import service.AdminService;
 import java.util.Scanner;
 import service.UserService;

@@ -85,24 +85,32 @@ public class Repository {
             throw new RuntimeException(e);
         }
 
-        String sql3 = "insert into chair(x, y,cinema_id)\n" +
-                "values (?, ?, ?)";
+        String sql3 = "insert into chair(x, y,cinema_id,chair_id)\n" +
+                "values (?, ?, ?,?)";
         int x;
         int y;
+        int chairId=1;
         for(int i=0;i<Integer.parseInt(numChair);i++) {
             y=(int)(i/8)+1;
             x=(i%8)+1;
+            String seat = String.valueOf((char) ('A' + (y - 1))) + x;
+            if (i % 8 == 7 && i < Integer.parseInt(numChair) - 1) {
+                System.out.println();
+            }
+
             try {
                 PreparedStatement psmt = conn.prepareStatement(sql3);
                 psmt.setInt(1, x);
                 psmt.setInt(2, y);
                 psmt.setInt(3, cinemaId);
+                psmt.setString(4, seat);
                 if (psmt.executeUpdate() == 0) {
                     System.out.println("insertPreview err");
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
+            chairId++;
         }
 
 
@@ -263,7 +271,7 @@ public class Repository {
     }
     public static void printChair(String cinemaId) {
         Connection conn = new JdbcConnection().getJdbc();
-        String sql = "select * from chair where cinema_id = ?";
+        String sql = "SELECT * FROM chair WHERE cinema_id = ?";
 
         Map<String, Map<Integer, String>> chairMap = new HashMap<>();
 
@@ -278,7 +286,7 @@ public class Repository {
                 int y = res.getInt("y");
                 String status = res.getString("status");
                 String row = String.valueOf((char) ('A' + (y - 1))); // 행
-                String seat = String.valueOf(x); // 열
+                String col = String.valueOf(x); // 열
 
                 if (!chairMap.containsKey(row)) {
                     chairMap.put(row, new HashMap<>());
@@ -293,15 +301,17 @@ public class Repository {
         System.out.println("\t\t\t SCREEN");
         for (char row = 'A'; row <= 'H'; row++) { // A부터 H까지 행
             System.out.print(row + " ");
-            for (int col = 1; col <= 8; col++) { // 1부터 6까지 열
+            for (int col = 1; col <= 8; col++) { // 1부터 8까지 열
                 String chair;
                 if (chairMap.containsKey(String.valueOf(row))) {
-                    chair = chairMap.get(String.valueOf(row)).get(col);
-                    if (chair == null) {
-                        chair = " ";
+                    String status = chairMap.get(String.valueOf(row)).get(col);
+                    if (status != null && status.equals("X")) {
+                        chair = "X"; // 예약된 좌석은 "X"로 표시
+                    } else {
+                        chair = String.valueOf(col); // 예약되지 않은 좌석은 실제 번호로 표시
                     }
                 } else {
-                    chair = " ";
+                    chair = " "; // 해당 행의 좌석 정보가 없는 경우 빈칸으로 표시
                 }
                 System.out.printf("%-4s", chair);
             }
@@ -314,10 +324,9 @@ public class Repository {
             System.out.println("connection close fail");
         }
     }
-
     public static void changeStatusAndPersonInsert(String chairId,String name,String phoneNum){
         Connection conn = new JdbcConnection().getJdbc();
-        String sql = "update chair set status=\'x\' where id=?";
+        String sql = "update chair set status=\'x\' where chair_id=?";
         try {
             PreparedStatement psmt = conn.prepareStatement(sql);
             psmt.setString(1, chairId);
