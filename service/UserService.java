@@ -6,9 +6,17 @@ public class UserService {
         //printPreview
         rp.printPreview();
     }
+    public static void printCinema() {
+        //printPreview
+        rp.printCinema();
+    }
 
     public static void relatedCinemaprint(String previewId) {
         rp.relatedCinemaPrint(previewId);
+    }
+
+    public static void relatedPreviewPrint(String cinemaId){
+        rp.relatedPreviewPrint(cinemaId);
     }
     public static void printChair(String cinemaId) {
         rp.printChair(cinemaId);

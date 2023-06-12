@@ -92,9 +92,9 @@ public class Controller {
                 System.out.println("해당 날짜에 상영하는 영화관 정보입니다!");
                 us.relatedCinemaprint(previewId);//시네마 상영하는 영화관 출력
                 System.out.print("예약을 하려면 영화관No.를 선택해주세요 -> 영화관No. = ");
-                String cinemaId=sc.nextLine();
+                String pcId=sc.nextLine();
                 System.out.println("남은 좌석 정보를 확인해주세요!");
-                us.printChair(cinemaId);
+                us.printChair(pcId);
                 System.out.print("예약 좌석을 선택해주세요! -> 좌석No. : ");
                 String chairId=sc.nextLine();
                 System.out.print("예약 고객님 성함을 입력해주세요! -> 이름 : ");
@@ -105,10 +105,25 @@ public class Controller {
                 selectMode();
             }
             else if (firstMode.equals("2")){
-                int cinemaId=us.getCinema();//영화관 정보 출력하고, 선택한 시사회 아이디 반환
-                int previewId=us.getPreview(cinemaId);
-
+                System.out.println("영화관 정보를 확인 후 선택해주세요!");
+                us.printCinema();//시사회 정보 출력
+                System.out.print("영화관No. : ");
+                String cinemaId=sc.nextLine();
+                System.out.println("해당 날짜에 상영하는 시사회 정보입니다!");
+                us.relatedPreviewPrint(cinemaId);//영화관에서 하는 시사회 정보 출력
+                System.out.print("예약을 하려면 시사회No.를 선택해주세요 -> 시사회No. = ");
+                String previewId=sc.nextLine();
+                System.out.println("남은 좌석 정보를 확인해주세요!");
+                us.printChair(cinemaId);
+                System.out.print("예약 좌석을 선택해주세요! -> 좌석No. : ");
+                String chairId=sc.nextLine();
+                System.out.print("예약 고객님 성함을 입력해주세요! -> 이름 : ");
+                String name=sc.nextLine();
+                System.out.print("예약 고객님 핸드폰 번호를 입력해주세요! -> 핸드폰 번호 : ");
+                String phoneNum=sc.nextLine();
+                us.changeStatusAndPersonInsert(chairId,name,phoneNum);//좌석 선택
                 selectMode();
+
             }
         }
 
