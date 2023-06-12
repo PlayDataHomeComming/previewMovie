@@ -1,6 +1,8 @@
 package repository;
 
 import Connection.JdbcConnection;
+import controller.Controller;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,6 +13,8 @@ import java.util.Scanner;
 
 //디비 접근하는 친구
 public class Repository {
+    static Controller ct = new Controller();
+
     public static boolean preInsert(String movieName, String dateOfPreview) {
         Connection conn = new JdbcConnection().getJdbc();
 
@@ -101,12 +105,12 @@ public class Repository {
         try {
             PreparedStatement psmt = conn.prepareStatement(sql);
             ResultSet res = psmt.executeQuery();
-            System.out.println("영화관No.\t영화관 이름\t\t\t지점");
+            System.out.println("영화관No.\t\t영화관 이름 (지점)");
             while (res.next()) {
                 id = res.getInt("id");
                 cinemaName = res.getString("cinema_name");
                 address = res.getString("address");
-                System.out.printf("%-4d\t\t%-12s%s\n", id, cinemaName, address);
+                System.out.printf("   %-4d\t\t\t%s (%s)\n", id, cinemaName, address);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -129,12 +133,13 @@ public class Repository {
         try {
             PreparedStatement psmt = conn.prepareStatement(sql);
             ResultSet res = psmt.executeQuery();
-            System.out.println("시사회No.\t영화 제목\t\t\t상영 날짜");
+//            System.out.println("시사회No.\t영화 제목\t\t\t\t\t\t(상영 날짜)");
+            System.out.println("시사회No.\t영화 제목 (상영 날짜)");
             while (res.next()) {
                 id = res.getInt("id");
                 movieName = res.getString("movie_name");
                 dateOfPreview = res.getString("date_of_preview");
-                System.out.printf("   %-4d\t\t%-13s%s\n", id, movieName, dateOfPreview);
+                System.out.printf("   %-10d%s (%s)\n", id, movieName, dateOfPreview);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -149,17 +154,30 @@ public class Repository {
 
     public static void printPerson() {
         Connection conn = new JdbcConnection().getJdbc();
-        String sql = "select * from person";
+        String sql =
+        "SELECT * FROM PERSON,PREVIEW_CINEMA,PREVIEW,CINEMA,CHAIR "+
+        "WHERE PERSON.CHAIR_ID = CHAIR.ID AND CHAIR.PREVIEW_CINEMA_ID=PREVIEW_CINEMA.PC_ID AND PREVIEW.ID=PREVIEW_CINEMA.PREVIEW_ID AND CINEMA.ID=PREVIEW_CINEMA.CINEMA_ID";
         Integer id = null;
         String name = null;
+        String phoneNum=null;
+        String cinemaName=null;
+        String address=null;
+        String movieName=null;
+        String dateOfPreview=null;
         try {
             PreparedStatement psmt = conn.prepareStatement(sql);
             ResultSet res = psmt.executeQuery();
-            System.out.println("id\tname");
+            System.out.println("영화 제목 (상영 날짜) \t\t 영화관 이름 (지점) \t예약자명(핸드폰 번호)");
             while (res.next()) {
-                id = res.getInt("id");
+
                 name = res.getString("name");
-                System.out.printf("%-4d%s\n", id, name);
+                phoneNum = res.getString("phone_num");
+                cinemaName = res.getString("cinema_name");
+                address = res.getString("address");
+                movieName = res.getString("movie_name");
+                dateOfPreview = res.getString("date_of_preview");
+
+                System.out.printf("%-6s(%-16s%-7s(%-9s%s(%s)\n",movieName,dateOfPreview+')',cinemaName,address+')', name,phoneNum);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -237,12 +255,12 @@ public class Repository {
             PreparedStatement psmt = conn.prepareStatement(sql);
             psmt.setString(1,previewId);
             ResultSet res = psmt.executeQuery();
-            System.out.println("영화관No.\t영화관 이름\t\t  지점");
+            System.out.println("영화관No.\t\t영화관 이름 (지점)");
             while (res.next()){
                 pcId=res.getInt("pc_id");
                 cinemaName=res.getString("cinema_name");
                 address=res.getString("address");
-                System.out.printf("%-7d%-14s%s\n",pcId,cinemaName,address);
+                System.out.printf("   %-4d\t\t\t%s (%s)\n",pcId,cinemaName,address);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -265,12 +283,12 @@ public class Repository {
             PreparedStatement psmt = conn.prepareStatement(sql);
             psmt.setString(1,cinemaId);
             ResultSet res = psmt.executeQuery();
-            System.out.println("시사회No. \t영화 제목\t\t\t상영 날짜");
+            System.out.println("시사회No.\t영화 제목  (상영 날짜)");
             while (res.next()){
                 pcId=res.getInt("pc_id");
                 movieName=res.getString("movie_name");
                 dateOfPreivew=res.getString("date_of_preview");
-                System.out.printf("%-7d%-13s%s\n",pcId,movieName,dateOfPreivew);
+                System.out.printf("   %-10d%s  (%s)\n",pcId,movieName,dateOfPreivew);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -317,6 +335,28 @@ public class Repository {
 
     public static void changeStatusAndPersonInsert(String chairId,String name,String phoneNum){
         Connection conn = new JdbcConnection().getJdbc();
+        String checkChairSql = "select * from person where phone_num =?";
+        Integer checkChair_id=null;
+        try {
+            PreparedStatement psmt = conn.prepareStatement(checkChairSql);
+            psmt.setString(1,phoneNum);
+            ResultSet res = psmt.executeQuery();
+            while (res.next()){
+                checkChair_id=res.getInt("chair_id");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+//        System.out.println(checkChairStatus);
+        if (checkChair_id != null) {
+            System.out.println("고객님은 다른 좌석을 이미 예매하였습니다.");
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                System.out.println("connection close fail");
+            }
+            ct.selectMode();
+        }
         String checkSql = "select * from chair where id=?";
         String checkChairStatus=null;
         try {
@@ -358,7 +398,7 @@ public class Repository {
                 }
             }
         }
-        String sql = "update chair set status=\'x\' where id=?";
+        String sql = "update chair set status=\'X\' where id=?";
         try {
             PreparedStatement psmt = conn.prepareStatement(sql);
             psmt.setString(1, chairId);
@@ -388,6 +428,7 @@ public class Repository {
         } catch (SQLException e) {
             System.out.println("connection close fail");
         }
+
     }
 }
 

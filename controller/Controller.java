@@ -63,12 +63,12 @@ public class Controller {
                         System.out.println("시사회 정보입니다!");
                         as.printPreview();
                         System.out.print("시사회 일정을 선택하세요! -> 시사회No. : ");
-                        String preiviewId=sc.nextLine();
+                        String previewId=sc.nextLine();
                         System.out.println("영화관 정보입니다!");
                         as.printCinema();
                         System.out.print("상영 영화관을 선택하세요! -> 영화관No. : ");
                         String cinemaId=sc.nextLine();
-                        as.combineCinemaPreview(preiviewId,cinemaId);
+                        as.combineCinemaPreview(previewId,cinemaId);
                         break;
                     case "4":
                         //todo get_person
