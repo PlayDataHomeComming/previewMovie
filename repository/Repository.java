@@ -347,35 +347,33 @@ public class Repository {
         }
 //        System.out.println(checkChairStatus);
 
-
-//      해당하는 check_id의 pc_id 반환
+//      해당하는 check_id의 pc_id 저장
         List<Integer> check_pc_id = new ArrayList<Integer>();
         String Sql = "select * from chair, preview_cinema where chair.preview_cinema_id=preview_cinema.pc_id " +
-                                "where chair.id=?";
+                                "and chair.id=?";
         for (Integer chair_id:checkChair_id) {
             try {
-                PreparedStatement psmt = conn.prepareStatement(checkChairSql);
+                PreparedStatement psmt = conn.prepareStatement(Sql);
                 psmt.setInt(1,chair_id);
                 ResultSet res = psmt.executeQuery();
                 while (res.next()){
-                    check_pc_id.add(res.getInt("pc_id"));
+                    check_pc_id.add(res.getInt("preview_cinema_id"));
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
 
-
         Sql = "select * from chair, preview_cinema where chair.preview_cinema_id=preview_cinema.pc_id " +
-                "where chair.id=?";
+                "and chair.id=?";
         for (Integer chair_id:checkChair_id) {
             try {
-                PreparedStatement psmt = conn.prepareStatement(checkChairSql);
+                PreparedStatement psmt = conn.prepareStatement(Sql);
                 psmt.setString(1,chairId);
                 ResultSet res = psmt.executeQuery();
                 while (res.next()){
                     for (Integer cd_id:check_pc_id) {
-                        if (cd_id==res.getInt("pc_id")){
+                        if (cd_id==res.getInt("preview_cinema_id")){
                             System.out.println("같은 시사회 선택 금지입니다. 다른 시사회 선택 하십시오.");
                             ct.selectMode();
                         }
@@ -423,9 +421,6 @@ public class Repository {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-
-
-
 
                 if (newChairStatus.equals("X")) {
                     System.out.println("좌석이 이미 예매되어 있습니다. 다른 좌석을 선택해주세요.");
