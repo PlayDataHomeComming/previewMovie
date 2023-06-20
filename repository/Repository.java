@@ -7,9 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 //디비 접근하는 친구
 public class Repository {
@@ -336,27 +334,62 @@ public class Repository {
     public static void changeStatusAndPersonInsert(String chairId,String name,String phoneNum){
         Connection conn = new JdbcConnection().getJdbc();
         String checkChairSql = "select * from person where phone_num =?";
-        Integer checkChair_id=null;
+        List<Integer> checkChair_id = new ArrayList<Integer>();
         try {
             PreparedStatement psmt = conn.prepareStatement(checkChairSql);
             psmt.setString(1,phoneNum);
             ResultSet res = psmt.executeQuery();
             while (res.next()){
-                checkChair_id=res.getInt("chair_id");
+                checkChair_id.add(res.getInt("chair_id"));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 //        System.out.println(checkChairStatus);
-        if (checkChair_id != null) {
-            System.out.println("고객님은 다른 좌석을 이미 예매하였습니다.");
+
+
+//      해당하는 check_id의 pc_id 반환
+        List<Integer> check_pc_id = new ArrayList<Integer>();
+        String Sql = "select * from chair, preview_cinema where chair.preview_cinema_id=preview_cinema.pc_id " +
+                                "where chair.id=?";
+        for (Integer chair_id:checkChair_id) {
             try {
-                conn.close();
+                PreparedStatement psmt = conn.prepareStatement(checkChairSql);
+                psmt.setInt(1,chair_id);
+                ResultSet res = psmt.executeQuery();
+                while (res.next()){
+                    check_pc_id.add(res.getInt("pc_id"));
+                }
             } catch (SQLException e) {
-                System.out.println("connection close fail");
+                throw new RuntimeException(e);
             }
-            ct.selectMode();
         }
+
+
+        Sql = "select * from chair, preview_cinema where chair.preview_cinema_id=preview_cinema.pc_id " +
+                "where chair.id=?";
+        for (Integer chair_id:checkChair_id) {
+            try {
+                PreparedStatement psmt = conn.prepareStatement(checkChairSql);
+                psmt.setString(1,chairId);
+                ResultSet res = psmt.executeQuery();
+                while (res.next()){
+                    for (Integer cd_id:check_pc_id) {
+                        if (cd_id==res.getInt("pc_id")){
+                            System.out.println("같은 시사회 선택 금지입니다. 다른 시사회 선택 하십시오.");
+                            ct.selectMode();
+                        }
+
+                    }
+
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+
+
         String checkSql = "select * from chair where id=?";
         String checkChairStatus=null;
         try {
@@ -390,6 +423,10 @@ public class Repository {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
+
+
+
+
                 if (newChairStatus.equals("X")) {
                     System.out.println("좌석이 이미 예매되어 있습니다. 다른 좌석을 선택해주세요.");
                 } else {
